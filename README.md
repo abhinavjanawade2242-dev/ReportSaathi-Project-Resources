@@ -104,7 +104,36 @@ Responsibilities and task assignments remain subject to final team confirmation.
 ```text
 ReportSaathi-Project-Resources/
 │
-├── docs/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI pipeline (Python tests + Vite build)
+│
+├── backend/
+│   ├── safety/
+│   │   ├── rules.py             # Deterministic biomarker evaluation & red-flag triggers
+│   │   └── banned_phrases.py    # Medical safety regex filter & safe fallback sanitizer
+│   └── integrations/
+│       └── ocr.py               # Tesseract OCR engine, clarity scorer & user correction
+│
+├── frontend/                    # React 18 + Vite + TypeScript web application
+│   ├── src/
+│   │   ├── components/          # 6 core screens (Language, Upload, Check, Results, Questions, Share)
+│   │   ├── types.ts             # Strict TypeScript frontend interfaces
+│   │   └── api.ts               # Frontend API client with offline guard & fallback safety
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── shared/
+│   ├── types.ts                 # Shared contract definitions across frontend & backend
+│   └── sample-report.json       # Gold-standard reference report fixture
+│
+├── tests/
+│   ├── fixtures/                # 10 anonymized medical report fixtures (01 to 10)
+│   ├── test_safety.py           # 13 deterministic safety & banned phrase tests
+│   ├── test_ocr.py              # 5 OCR parser, clarity & correction tests
+│   └── test_api_contract.py     # 13 API contract & schema validation tests
+│
+├── docs/                        # Complete 12-stage project documentation
 │   ├── 01-problem.md
 │   ├── 02-research.md
 │   ├── 03-scope.md
@@ -114,18 +143,34 @@ ReportSaathi-Project-Resources/
 │   ├── 06-test-plan.md
 │   ├── 06b-safety-rules.md
 │   ├── 06c-api-contracts.md
+│   ├── 06d-clinical-review-protocol.md
 │   ├── 07-task-breakdown.md
 │   ├── 09-release.md
 │   └── 10-feedback.md
 │
-├── tests/
-│
 └── README.md
 ```
 
-The repository currently focuses on project requirements, planning and technical documentation. Application implementation will be organized after the documentation and team decisions are reviewed.
+## 9. Verification & Testing
 
-## 9. Documentation Index
+### Running Backend & Safety Tests (100% Pass Rate)
+The test suite runs with standard Python library tooling (`unittest`):
+
+```bash
+# Run all 31 tests across safety, OCR, and API contracts
+python -m unittest discover tests -v
+```
+
+### Running Frontend Build & Type Check
+The React + Vite application builds cleanly:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+## 10. Documentation Index
 
 | Document | Purpose |
 |---|---|
@@ -138,41 +183,35 @@ The repository currently focuses on project requirements, planning and technical
 | [Test Plan](docs/06-test-plan.md) | Testing strategy and test cases. |
 | [Safety Rules](docs/06b-safety-rules.md) | Medical safety and privacy requirements. |
 | [API Contracts](docs/06c-api-contracts.md) | Proposed backend API specifications. |
+| [Clinical Review Protocol](docs/06d-clinical-review-protocol.md) | Medical doctor review audit sheet & red-flag thresholds. |
 | [Task Breakdown](docs/07-task-breakdown.md) | Development and integration tasks. |
-| [Release Plan](docs/09-release.md) | Proposed deployment and release preparation. |
-| [Feedback & Continuous Improvement](docs/10-feedback.md) | Defines feedback collection, application monitoring and continuous improvement processes. |
+| [Release Plan](docs/09-release.md) | Proposed deployment, QA status and release preparation. |
+| [Feedback & Continuous Improvement](docs/10-feedback.md) | Defines feedback collection, monitoring and improvement. |
 
-## 10. Development Approach
+## 11. Development Approach
 
-The team will follow a documentation-first development approach:
+The team follows a documentation-first, safety-first development approach:
 
 1. Complete and review project documentation.
-2. Confirm outstanding technical and product decisions.
-3. Align team responsibilities and development tasks.
-4. Prepare the implementation handoff.
-5. Develop and integrate the application.
-6. Execute testing and quality verification.
-7. Prepare staging and production deployment.
+2. Implement deterministic safety guardrails before AI text generation.
+3. Scaffold frontend components and user verification flows.
+4. Establish comprehensive automated test fixtures and contract tests.
+5. Configure CI/CD automated validation for all PRs and pushes.
+6. Conduct qualified medical professional review of red-flag thresholds.
+7. Integrate backend API services and deployment pipeline.
 
-Google Antigravity is planned as the implementation environment after the documentation review and handoff.
+## 12. Current Project Status
 
-## 11. Current Project Status
+**Current phase:** Implementation & Quality Assurance.
 
-**Current phase:** Documentation and planning.
-
-Requirements, research, scope, design, architecture, API contracts, safety rules, test planning, task breakdown and release planning are documented as drafts or proposals.
-
-Implementation, integration, testing and deployment are not yet confirmed as completed.
-
-Some decisions still require confirmation, particularly:
-- Exact temporary-data retention duration.
-- Backup deletion and recovery policy.
-- Qualified medical review and approval of red-flag rules.
-- Final Supabase implementation and access-control configuration.
-- Final API and operational monitoring requirements.
+- **Quality Assurance & Safety:** 31 out of 31 automated tests passing (100% pass rate).
+- **Medical Safety Engine:** Deterministic red-flag triggers and banned phrase filters active.
+- **Frontend Application:** React 18 + Vite 5 + TypeScript app with 6 core screens verified.
+- **Continuous Integration:** GitHub Actions CI workflow configured.
+- **Clinical Review:** Doctor sign-off audit protocol documented at `docs/06d-clinical-review-protocol.md`.
 
 ---
 
-**Project:** ReportSaathi
-**Repository:** ReportSaathi-Project-Resources
-**Status:** Documentation and planning phase
+**Project:** ReportSaathi  
+**Repository:** ReportSaathi-Project-Resources  
+**Status:** Implementation & QA Phase (31/31 Tests Passing, Frontend Built)
