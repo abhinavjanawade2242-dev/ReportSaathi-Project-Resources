@@ -245,12 +245,13 @@ Person 3 has implemented, verified, and committed the following QA components to
 | Banned phrase sanitizer | `backend/safety/banned_phrases.py` | `tests/test_safety.py` | Included |
 | Tesseract OCR & Parser | `backend/integrations/ocr.py` | `tests/test_ocr.py` | 5/5 (100%) |
 | API Contract Suite | `docs/06c-api-contracts.md` | `tests/test_api_contract.py` | 13/13 (100%) |
+| Privacy & Ephemeral Storage | `backend/safety/privacy.py` | `tests/test_privacy.py` | 9/9 (100%) |
 | Test Fixtures (10 cases) | `tests/fixtures/01..10` | Full suite | Verified |
 | Frontend Application | `frontend/` (React + Vite) | `npm run build` | Verified (819ms) |
 | CI/CD Pipeline | `.github/workflows/ci.yml` | GitHub Actions | Configured |
 | Clinical Review Protocol | `docs/06d-clinical-review-protocol.md` | Medical sign-off | Documented |
 
-**Verification status:** All 31 automated tests (`tests/test_safety.py`, `tests/test_ocr.py`, `tests/test_api_contract.py`) have been independently executed and verified in the local environment and committed to `main` with a 100% pass rate. Frontend production build passes cleanly.
+**Verification status:** All 40 automated tests (`tests/test_safety.py`, `tests/test_ocr.py`, `tests/test_api_contract.py`, `tests/test_privacy.py`) have been independently executed and verified in the local environment and committed to `main` with a 100% pass rate. Frontend production build passes cleanly.
 
 ### 7.5 Final QA Acceptance Criteria
 

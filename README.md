@@ -111,7 +111,8 @@ ReportSaathi-Project-Resources/
 ├── backend/
 │   ├── safety/
 │   │   ├── rules.py             # Deterministic biomarker evaluation & red-flag triggers
-│   │   └── banned_phrases.py    # Medical safety regex filter & safe fallback sanitizer
+│   │   ├── banned_phrases.py    # Medical safety regex filter & safe fallback sanitizer
+│   │   └── privacy.py           # PHI log sanitization & ephemeral storage lifecycle (SAFE-08, OCR-10)
 │   └── integrations/
 │       └── ocr.py               # Tesseract OCR engine, clarity scorer & user correction
 │
@@ -131,7 +132,8 @@ ReportSaathi-Project-Resources/
 │   ├── fixtures/                # 10 anonymized medical report fixtures (01 to 10)
 │   ├── test_safety.py           # 13 deterministic safety & banned phrase tests
 │   ├── test_ocr.py              # 5 OCR parser, clarity & correction tests
-│   └── test_api_contract.py     # 13 API contract & schema validation tests
+│   ├── test_api_contract.py     # 13 API contract & schema validation tests
+│   └── test_privacy.py          # 9 PHI log sanitization, path traversal & TTL cleanup tests
 │
 ├── docs/                        # Complete 12-stage project documentation
 │   ├── 01-problem.md
@@ -157,7 +159,7 @@ ReportSaathi-Project-Resources/
 The test suite runs with standard Python library tooling (`unittest`):
 
 ```bash
-# Run all 31 tests across safety, OCR, and API contracts
+# Run all 40 tests across safety, OCR, API contracts, and privacy lifecycle
 python -m unittest discover tests -v
 ```
 
@@ -204,8 +206,9 @@ The team follows a documentation-first, safety-first development approach:
 
 **Current phase:** Implementation & Quality Assurance.
 
-- **Quality Assurance & Safety:** 31 out of 31 automated tests passing (100% pass rate).
+- **Quality Assurance & Safety:** 40 out of 40 automated tests passing (100% pass rate).
 - **Medical Safety Engine:** Deterministic red-flag triggers and banned phrase filters active.
+- **Privacy & Data Protection:** Ephemeral file lifecycle, automatic TTL cleanup, and PHI log sanitization active.
 - **Frontend Application:** React 18 + Vite 5 + TypeScript app with 6 core screens verified.
 - **Continuous Integration:** GitHub Actions CI workflow configured.
 - **Clinical Review:** Doctor sign-off audit protocol documented at `docs/06d-clinical-review-protocol.md`.
@@ -214,4 +217,4 @@ The team follows a documentation-first, safety-first development approach:
 
 **Project:** ReportSaathi  
 **Repository:** ReportSaathi-Project-Resources  
-**Status:** Implementation & QA Phase (31/31 Tests Passing, Frontend Built)
+**Status:** Implementation & QA Phase (40/40 Tests Passing, Frontend Built)

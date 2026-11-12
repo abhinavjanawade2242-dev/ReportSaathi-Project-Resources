@@ -8,7 +8,7 @@ on:
 
 jobs:
   python-tests:
-    name: Run Python Tests (Safety, OCR & API Contracts)
+    name: Run Python Tests (Safety, OCR, Contracts & Privacy)
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Execute automated test suite (31 tests)
+      - name: Execute automated test suite (40 tests)
         run: |
           python -m unittest discover tests -v
 
