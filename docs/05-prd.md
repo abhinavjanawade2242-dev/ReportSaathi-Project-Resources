@@ -68,27 +68,37 @@ ReportSaathi is designed for the following user groups:
 
 ## 5. User Roles
 
-The application will support the following roles:
+The MVP will support patient/customer access without requiring mandatory registration or login. Administrator access must be restricted through appropriate authentication and authorization.
 
 ### 5.1 Customer / Patient
-- Register and log in to the application.
-- Upload medical documents.
-- View extracted text from uploaded documents.
+
+- Access the application without mandatory registration or login.
+- Upload supported medical documents.
+- View text extracted from uploaded documents.
+- Correct OCR-extracted text when necessary.
+- Select a preferred explanation language: English, Hindi or Kannada.
+- Select a reading level: Simple, Standard or Detailed.
 - Receive simplified medical explanations.
-- View laboratory values alongside the reference ranges printed in the report.
-- Request explanations in supported languages.
-- Generate questions to discuss with doctors.
-- View previous explanations, subject to the application's privacy and retention policy.
+- View laboratory values alongside only the reference ranges printed in the uploaded report.
+- Receive clarification of existing prescription instructions without changing medication names, dosages, frequency or duration.
+- Generate 3–6 questions to discuss with healthcare professionals.
+- Save or share explanations using the available application features.
+- Download explanations as PDF.
+- Share explanations through a pre-filled WhatsApp sharing link, subject to user confirmation.
+- Submit optional feedback about application performance or explanation quality.
+
+Report history and mandatory patient accounts are excluded from the initial MVP.
 
 ### 5.2 Administrator
-- Manage application-level settings.
-- Monitor application health and system errors.
-- Review user feedback and reported issues.
-- Monitor AI and OCR service performance.
-- Manage supported languages and application content.
-- Review safety-related incidents and take appropriate action.
 
-**Important:** Administrators must not access users' medical documents unless explicitly authorized for a legitimate support or safety purpose under the privacy policy.
+- Access the administrator dashboard through authorized credentials.
+- Monitor application health and system errors.
+- Monitor OCR and AI service availability and performance.
+- Review optional user feedback and reported application issues.
+- Monitor operational and safety-related incidents.
+- Manage application-level settings and supported languages, where permitted.
+
+**Privacy restriction:** Administrators must not routinely access uploaded medical documents or extracted medical information. Any exceptional access must be explicitly authorized, justified and governed by the approved privacy policy.
 
 ---
 
@@ -96,94 +106,117 @@ The application will support the following roles:
 
 Functional requirements describe the features that the application must provide.
 
-### FR-01: User Authentication
-The system should allow users to register, log in, and securely access their accounts.
+### FR-01: Patient Access
+
+The system should allow users to access the core MVP features without mandatory registration or login. Administrator functions must require appropriate authentication and authorization.
 
 ### FR-02: Medical Document Upload
-The system should allow users to upload supported medical documents in PDF and image formats.
+
+The system should allow users to upload PDF, JPG, JPEG and PNG medical documents.
+
+- Maximum upload size: 10 MB.
+- Empty files and unsupported formats must be rejected.
+- Uploaded documents must be processed securely.
 
 ### FR-03: OCR Text Extraction
-The system should extract readable text from uploaded documents using OCR technology.
 
-### FR-04: Medical Report Explanation
-The system should convert complex medical terminology into simple, understandable language.
+The system should extract readable text from uploaded documents using OCR technology and identify cases where extracted information requires user verification.
 
-### FR-05: Laboratory Result Explanation
-The system should explain laboratory values using only the reference ranges printed in the uploaded report.
+### FR-04: Manual OCR Correction
 
-### FR-06: Prescription Clarification
-The system should explain existing prescription instructions without changing medication names, dosages, frequency, or duration.
+The system should allow users to correct OCR-extracted text before requesting an explanation. The backend must use the verified or corrected text associated with the uploaded document.
 
-### FR-07: Multilingual Support
-The system should provide explanations in supported languages while preserving medical meaning.
+### FR-05: Medical Report Explanation
 
-### FR-08: Doctor Question Generation
-The system should generate approximately 3–4 useful questions that users can discuss with their healthcare professionals.
+The system should convert complex medical terminology into understandable language while preserving the meaning of the original medical information.
 
-### FR-09: Safety Warning Detection
-The backend should check predefined medical warning conditions before sending relevant information to the AI service.
+Users should be able to select one of three reading levels:
 
-### FR-10: User Feedback
-The system should allow users to report incorrect explanations, OCR problems, and other application issues.
+- Simple
+- Standard
+- Detailed
 
-### FR-11: Error Handling
-The system should display understandable error messages when document uploads, OCR processing, or AI services fail.
+### FR-06: Laboratory Result Explanation
 
+The system should explain laboratory values using only the reference ranges printed in the uploaded report. It must not invent or assume missing reference ranges.
+
+### FR-07: Prescription Clarification
+
+The system should explain existing prescription instructions without changing medication names, dosages, frequency or duration. It must not recommend starting, stopping or modifying medication.
+
+### FR-08: Multilingual Support
+
+The system should provide explanations in the following MVP languages:
+
+- English
+- Hindi
+- Kannada
+
+Translations must preserve medical meaning and important medical terminology.
+
+### FR-09: Doctor Question Generation
+
+The system should generate between 3 and 6 relevant questions that users can discuss with their healthcare professionals. Questions must not encourage self-diagnosis or self-treatment.
+
+### FR-10: Safety Warning Detection
+
+The backend should check predefined medical warning conditions before sending relevant information to the AI service. Red-flag rules must receive qualified medical professional review and approval before production release.
+
+### FR-11: Save and Share Explanations
+
+The system should allow users to save or share generated explanations using the supported application features. Sharing must require user action and must not expose medical information without the user's consent.
+
+### FR-12: PDF Download
+
+The system should allow users to download generated explanations in PDF format.
+
+### FR-13: WhatsApp Sharing
+
+The system should provide a pre-filled WhatsApp sharing link. The user must review and confirm the content before sharing.
+
+### FR-14: Optional User Feedback
+
+The system should allow users to optionally submit feedback about incorrect explanations, OCR problems or other application issues. Feedback collection must avoid unnecessary medical information.
+
+### FR-15: Administrator Monitoring
+
+The system should provide a basic administrator dashboard for monitoring application health, service availability, system errors and reported operational issues. Medical report contents must not be exposed through routine monitoring.
+
+### FR-16: Error Handling
+
+The system should display understandable error messages when document uploads, OCR processing, translation or AI services fail. Sensitive technical details must not be exposed to users.
 
 ---
 
-## 7. Non-Functional Requirements
-
-### NFR-01: Performance
-- The application should process normal medical documents within a reasonable time.
-- The interface should respond smoothly to user interactions.
-- Long-running OCR and AI operations should display processing indicators.
-
-### NFR-02: Security
-- All communication between frontend and backend should use HTTPS in production.
-- Sensitive API keys must be stored securely on the backend.
-- User authentication and authorization must be implemented securely.
-- Medical information must not be exposed through application logs.
-
-### NFR-03: Privacy
-- The application should collect only the information required to provide its services.
-- Users should be informed about how their medical documents are processed.
-- Medical documents should not be sent to analytics platforms.
-- Document retention and deletion should follow the application's privacy policy.
-
-### NFR-04: Reliability
-- The application should handle OCR and AI service failures gracefully.
-- Failed operations should provide clear error messages.
-- The system should avoid presenting incomplete or incorrectly extracted information as verified results.
-
-### NFR-05: Usability
-- The interface should be simple and understandable for non-technical users.
-- Important information should be displayed clearly.
-- The application should support mobile and desktop screens.
-
-### NFR-06: Scalability
-- The backend should support future increases in users and document processing requests.
-- The architecture should allow additional languages and document formats to be introduced.
-
-### NFR-07: Maintainability
-- The frontend and backend should have separate, organized code structures.
-- APIs should follow consistent request and response formats.
-- Dependencies and setup instructions should be documented.
-
 ## 8. Minimum Viable Product (MVP)
 
-The first version of ReportSaathi will focus on the following essential features:
+The first version of ReportSaathi will focus on the following features:
 
-1. User registration and login.
-2. Medical document upload.
+1. Patient access without mandatory registration or login.
+2. Medical document upload supporting PDF, JPG, JPEG and PNG formats, with a maximum size of 10 MB.
 3. OCR-based text extraction.
-4. AI-assisted medical report explanation.
-5. Laboratory result explanation using printed reference ranges.
-6. Prescription instruction clarification.
-7. Basic multilingual explanation.
-8. Doctor question generation.
-9. Backend medical safety checks.
-10. Basic administrator monitoring and feedback management.
+4. Manual correction of extracted OCR text.
+5. AI-assisted medical report explanation.
+6. Three reading levels: Simple, Standard and Detailed.
+7. Laboratory result explanation using reference ranges printed in the uploaded report.
+8. Prescription instruction clarification without medication changes.
+9. Multilingual explanations in English, Hindi and Kannada.
+10. Generation of 3–6 doctor discussion questions.
+11. Backend medical safety and predefined red-flag checks.
+12. Save and share explanations.
+13. PDF download.
+14. WhatsApp sharing through a pre-filled sharing link.
+15. Optional user feedback.
+16. Basic administrator monitoring and error tracking.
+17. Secure temporary document processing and automatic deletion according to the approved retention policy.
+
+**MVP data and privacy approach:**
+
+- Supabase is proposed for minimal data storage, subject to final team confirmation.
+- Report history is excluded from the MVP.
+- Mandatory patient registration and login are excluded.
+- Temporary report files and extracted medical information must follow an approved retention and deletion policy.
+- The exact retention duration and backup deletion policy remain pending team confirmation.
 
 ### 8.1 Features Outside the Initial MVP
 
@@ -192,9 +225,13 @@ The following features may be considered for future versions:
 - Direct integration with hospital information systems.
 - Electronic health record synchronization.
 - Advanced doctor and clinic dashboards.
-- Human medical expert verification.
+- Permanent patient report history.
+- Mandatory patient account management.
+- Human medical expert verification as an in-app feature.
 - Advanced analytics and reporting.
 - Support for handwritten prescriptions.
+- Voice-based interaction and advanced chatbot capabilities.
+- Advanced hospital and clinic integrations.
 
 ## 9. Success Metrics
 
