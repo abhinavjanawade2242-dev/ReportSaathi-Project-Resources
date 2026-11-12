@@ -1,207 +1,349 @@
-# ReportSaathi — Test Plan
+# ReportSaathi – Test Plan
 
-**Stage:** 6 — Test Plan  
-**Owner:** Person 3 — Quality & Engineering Lead  
-**Status:** Draft
+**Document:** Stage 6 – Test Plan  
+**Owner:** Person 3 – Quality & Engineering Lead  
+**Status:** Proposed – Pending Team Confirmation and Backend Integration
 
 ## 1. Objective
 
-The objective of this test plan is to verify that ReportSaathi works correctly, reliably, and safely.
+Define the testing strategy for ReportSaathi to verify functionality, API contracts, input validation, medical safety, privacy and reliability.
 
-Testing will cover report uploads, OCR extraction, value validation, explanations, medical safety rules, API integration, and user experience.
+Testing must ensure that the application explains medical information responsibly without diagnosing patients, recommending medication changes or inventing laboratory reference ranges.
+
+**Important:** The requirements and decisions in this document are proposed testing expectations. They do not confirm that the backend currently implements them.
 
 ## 2. Testing Scope
 
-### Features to be tested
+### 2.1 Proposed MVP features
 
-1. Language selection.
-2. Photo and PDF upload.
-3. OCR text extraction.
-4. Manual correction of extracted values.
-5. Medical value explanation.
-6. Reference range comparison.
-7. Deterministic red-flag detection.
-8. Medicine information explanation.
-9. Doctor question generation.
-10. Save and share functionality.
+- Language selection: English and Kannada.
+- Medical document upload: PDF, JPG, JPEG and PNG.
+- Maximum upload size: 25 MB.
+- OCR text extraction.
+- Manual verification and correction of unclear extracted text.
+- Plain-language medical report explanations.
+- Comparison with reference ranges printed on the report.
+- Deterministic red-flag checks before AI explanation generation.
+- Medical explanation disclaimer.
+- Translation into supported languages.
+- Doctor-question generation.
+- Safe handling of OCR and AI failures.
 
-### Features excluded from MVP testing
+### 2.2 Excluded or conditional features
 
-- WhatsApp chatbot.
-- Nearby clinics and laboratories map.
-- Medicine reminders.
-- Report history and trends.
-- Voice readout.
-
-## 3. Testing Types
-
-| Testing Type | Purpose |
+| Feature | Testing status |
 |---|---|
-| Unit Testing | Test individual functions and components. |
-| Integration Testing | Verify that different modules work together. |
-| Contract Testing | Verify API request and response formats. |
-| End-to-End Testing | Test the complete user journey. |
-| Security Testing | Check file validation, authentication and user data isolation. |
-| Safety Testing | Verify medical safety rules and prevent unsafe outputs. |
-| Manual Testing | Check usability and language explanations. |
+| Save/share | Excluded until team approval |
+| Patient report history | Excluded from MVP |
+| Authentication | Pending team decision |
+| Patient data isolation | Security requirement to discuss and verify if applicable |
+| Feedback endpoint | Conditional MVP feature |
+| WhatsApp integration | Post-MVP |
+| Nearby labs/clinics map | Post-MVP |
+| Medicine reminders | Post-MVP |
+| Voice readout | Post-MVP |
 
-## 4. Testing Tools
+## 3. Proposed API Contract Coverage
 
-- Pytest — Python backend testing.
-- Vitest — frontend unit testing.
-- Playwright — end-to-end testing.
-- MSW — frontend API mocking.
-- Bruno or Hoppscotch — API testing.
+| Endpoint | Method | Testing priority |
+|---|---|---|
+| `/api/health` | GET | MVP |
+| `/api/upload` | POST | MVP |
+| `/api/extract` | POST | MVP |
+| `/api/explain` | POST | MVP |
+| `/api/translate` | POST | MVP |
+| `/api/questions` | POST | MVP |
+| `/api/feedback` | POST | Conditional |
+| `/api/history` | GET | Excluded from MVP |
 
-## 5. Acceptance Criteria
+The API contract is proposed and must be checked against the actual FastAPI implementation.
 
-### TC-01: Language Selection
+## 4. Proposed Validation and Error Handling
 
-**Given:** A user opens ReportSaathi.
+### 4.1 Upload validation
 
-**When:** The user selects a supported language.
+| Scenario | Expected HTTP status |
+|---|---:|
+| Valid PDF, JPG, JPEG or PNG | 200 |
+| Empty upload | 400 |
+| Unsupported file format | 415 |
+| File larger than 25 MB | 413 |
 
-**Then:** The application should display explanations in the selected language.
+### 4.2 Other API validation
 
-### TC-02: PDF Upload
+| Scenario | Expected HTTP status |
+|---|---:|
+| Invalid document ID | 404 |
+| Missing or malformed required fields | 422 |
+| Unsupported language | 422 |
+| OCR failure | 422 |
+| AI service failure or timeout | 503 |
 
-**Given:** A user has a valid PDF medical report.
+The exact error codes and messages must be verified against the final implementation.
 
-**When:** The user uploads the PDF.
+### 4.3 Proposed error response structure
 
-**Then:** The application should accept the file and process it.
+All error responses should follow this structure:
 
-### TC-03: File Size Validation
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_DOCUMENT_ID",
+    "message": "The requested document was not found."
+  }
+}
+```
 
-**Given:** A user selects a file larger than the permitted 25 MB limit.
+The frontend must display understandable messages rather than raw server errors or internal stack traces.
 
-**When:** The user uploads the file.
+## 5. Acceptance Test Cases
 
-**Then:** The application should reject it and display an appropriate error.
+### TC-01: Language selection
 
-### TC-04: OCR Extraction
+**Given:** The user opens the application.  
+**When:** The user selects English or Kannada.  
+**Then:** The selected language should be accepted and used for the requested explanation.
 
-**Given:** A valid medical report is uploaded.
+### TC-02: Unsupported language
 
-**When:** OCR processing is performed.
+**Given:** The API receives an unsupported language.  
+**When:** The request is submitted.  
+**Then:** The API should return HTTP 422 and clearly identify the supported languages: English and Kannada.
 
-**Then:** The application should extract the available text and medical values.
+### TC-03: Valid document upload
 
-### TC-05: Manual Correction
+**Given:** The user selects a supported PDF, JPG, JPEG or PNG file within the 25 MB limit.  
+**When:** The user uploads the document.  
+**Then:** The API should return HTTP 200 with a temporary document ID, filename and upload status.
 
-**Given:** OCR extracts an incorrect medical value.
+### TC-04: Empty document upload
 
-**When:** The user corrects the extracted value.
+**Given:** The user submits an empty file.  
+**When:** The upload request is processed.  
+**Then:** The API should return HTTP 400 with a safe validation message.
 
-**Then:** The corrected value should be used in subsequent processing.
+### TC-05: Unsupported document format
 
-### TC-06: Reference Range Comparison
+**Given:** The user selects an unsupported file format.  
+**When:** The file is uploaded.  
+**Then:** The API should return HTTP 415.
 
-**Given:** A report contains a medical value and its printed reference range.
+### TC-06: Oversized document upload
 
-**When:** The application evaluates the value.
+**Given:** The user selects a document larger than 25 MB.  
+**When:** The file is uploaded.  
+**Then:** The API should return HTTP 413 and reject the file.
 
-**Then:** The displayed status should be based on that printed reference range.
+### TC-07: Successful OCR extraction
 
-### TC-07: Missing Reference Range
+**Given:** A valid document has been uploaded.  
+**When:** The user requests text extraction using its document ID.  
+**Then:** The API should return extracted text and an extraction status.
 
-**Given:** A medical report does not contain a reference range for a value.
+### TC-08: Unclear OCR result
 
-**When:** The application processes that value.
+**Given:** An uploaded report contains blurry or unclear text.  
+**When:** OCR processing is performed.  
+**Then:** The application should request manual verification or correction and must not confidently explain uncertain values.
 
-**Then:** The application must not invent a reference range or present an unsupported status.
+### TC-09: Invalid document ID
 
-### TC-08: Red-Flag Detection
+**Given:** An invalid or nonexistent document ID is submitted.  
+**When:** Extraction or explanation is requested.  
+**Then:** The API should return HTTP 404 with a safe error response.
 
-**Given:** A report contains a value matching a predefined safety rule.
+### TC-10: Manual correction
 
-**When:** The backend processes the report.
+**Given:** OCR extraction returns incorrect or uncertain text.  
+**When:** The user corrects the extracted information.  
+**Then:** The application should use the corrected text for subsequent processing.
 
-**Then:** Deterministic backend rules should identify the applicable warning.
+### TC-11: Reference range comparison
 
-### TC-09: AI Service Failure
+**Given:** A report contains a medical value and its printed reference range.  
+**When:** The application processes the report.  
+**Then:** The displayed status should be based on the printed reference range and original value.
 
-**Given:** A report triggers a predefined red-flag condition.
+### TC-12: Missing reference range
 
-**When:** The AI service becomes unavailable.
+**Given:** A report contains a medical value without a printed reference range.  
+**When:** The application explains the report.  
+**Then:** It must not invent a reference range or confidently classify the value using an assumed range.
 
-**Then:** The red-flag alert must remain visible.
+### TC-13: Deterministic red-flag checks
 
-### TC-10: Unsafe Medical Advice
+**Given:** A report contains information matching a predefined red-flag rule.  
+**When:** The backend processes the report.  
+**Then:** Deterministic safety checks must execute before AI explanation generation, and the relevant warning must be preserved.
 
-**Given:** A user requests a diagnosis or medication dose change.
+### TC-14: AI service failure
 
-**When:** The AI generates a response.
+**Given:** The AI service is unavailable or times out.  
+**When:** An explanation is requested.  
+**Then:** The API should return HTTP 503 with a safe fallback message and must not invent a medical explanation.
 
-**Then:** The application must not provide a diagnosis or recommend medication changes.
+### TC-15: Red-flag warning during AI failure
 
-### TC-11: Doctor Questions
+**Given:** A report triggers a predefined red-flag rule and the AI service fails.  
+**When:** The application displays the result.  
+**Then:** The red-flag warning must remain visible even when AI explanation generation fails.
 
-**Given:** A user receives a report explanation.
+### TC-16: Unsafe AI output
 
-**When:** The application generates doctor questions.
+**Given:** The AI produces a diagnosis, medication change recommendation or other prohibited medical advice.  
+**When:** The backend safety validation checks the output.  
+**Then:** The unsafe output must be rejected and replaced with a safe fallback response.
 
-**Then:** It should provide relevant questions for discussion with a qualified doctor.
+### TC-17: Translation accuracy
 
-### TC-12: User Data Isolation
+**Given:** An explanation contains medical values, units and prescription instructions.  
+**When:** The explanation is translated into Kannada.  
+**Then:** The translation must preserve the original values, units and instructions.
 
-**Given:** Two different authenticated users use the application.
+### TC-18: Doctor-question generation
 
-**When:** One user attempts to access another user's private report.
+**Given:** A valid medical explanation is available.  
+**When:** The user requests questions for a doctor.  
+**Then:** The application should generate relevant questions without recommending self-treatment or medication changes.
 
-**Then:** The application must prevent unauthorized access.
+### TC-19: Feedback validation (conditional)
 
-## 6. Test Fixtures
+**Given:** The feedback endpoint is included in the MVP.  
+**When:** A user submits a rating between 1 and 5.  
+**Then:** The API should accept the valid rating.
 
-The following test samples will be maintained in `tests/fixtures/`:
+Invalid ratings should be rejected using the agreed validation response.
 
-1. Normal medical report.
-2. Report containing high values.
-3. Report containing low values.
-4. Report with missing reference ranges.
-5. Report with unclear or blurry text.
-6. Report with multiple medical values.
-7. Scanned PDF report.
-8. Report containing OCR extraction challenges.
-9. Multilingual report.
-10. Report containing predefined red-flag test cases.
+This test is excluded if feedback is moved to post-MVP.
 
-All fixtures must be synthetic or properly anonymized. No real patient-identifying information should be committed.
+### TC-20: Sensitive information in logs
 
-## 7. Medical Safety Testing
+**Given:** A document is uploaded and processed.  
+**When:** Backend operations and error handling are recorded.  
+**Then:** Medical report contents and personal health information must not appear in application logs or analytics.
 
-- Verify that the backend performs deterministic red-flag checks.
-- Verify that AI cannot override deterministic safety results.
-- Verify that the application does not diagnose diseases.
-- Verify that medication dosage changes are not recommended.
-- Verify that missing reference ranges are not fabricated.
-- Verify that medical disclaimers are displayed.
-- Verify that safety alerts remain available when AI fails.
+### TC-21: Temporary document deletion
 
-## 8. Test Completion Criteria
+**Given:** A document has completed processing or reached the agreed session-retention limit.  
+**When:** The retention policy is executed.  
+**Then:** Temporary uploaded documents and extracted text should be deleted according to the finalized policy.
 
-A feature is considered ready for acceptance when:
+The exact retention period is pending team confirmation.
 
-- Relevant tests pass.
-- No critical safety test fails.
-- API contracts are verified.
-- Linting and type checks pass.
-- Integration tests pass.
-- Relevant end-to-end tests pass.
-- Test results are documented.
+## 6. Medical Safety Test Requirements
 
-## 9. Test Execution Status
+Medical safety is a critical part of the testing process.
 
-| Testing Area | Status |
+The following conditions must be verified:
+
+1. Deterministic red-flag checks execute before AI explanation generation.
+2. Red-flag warnings remain available even if the AI service fails.
+3. The application never provides a medical diagnosis.
+4. The application never recommends starting, stopping or changing prescribed medication.
+5. The application never invents laboratory reference ranges.
+6. Original laboratory values and units are preserved.
+7. Unclear OCR results require manual verification.
+8. Unsafe AI output is rejected.
+9. Safe fallback messages are displayed when AI processing fails.
+10. Medical disclaimers accompany explanations.
+
+**Critical rule:** Safety tests must never be weakened or removed just to make the test suite pass.
+
+## 7. Privacy and Security Testing
+
+Verify the following requirements:
+
+- Uploaded files are validated before processing.
+- API keys and secrets are not exposed in frontend code.
+- HTTPS is used in deployed environments.
+- Medical report contents are excluded from application logs and analytics.
+- Temporary files and extracted text follow the approved deletion policy.
+- Authentication and patient data isolation remain requirements pending the team's MVP decision.
+- If authentication and persistent patient records are introduced, unauthorized access and cross-user access must be tested.
+- Invalid document IDs must not expose another user's medical information.
+- Filenames and extracted text must be treated as untrusted input.
+
+## 8. Test Fixtures
+
+Prepare 10 anonymized sample medical-report fixtures under `tests/fixtures/`.
+
+| Fixture | Purpose |
 |---|---|
-| Unit Testing | Not Started |
-| Integration Testing | Not Started |
-| Contract Testing | Not Started |
-| End-to-End Testing | Not Started |
-| Security Testing | Not Started |
-| Safety Testing | Not Started |
-| Manual Testing | Not Started |
+| `01-normal-report` | Normal-looking values with printed ranges |
+| `02-high-values` | Values above printed ranges |
+| `03-low-values` | Values below printed ranges |
+| `04-missing-ranges` | Values without reference ranges |
+| `05-blurry-report` | OCR uncertainty |
+| `06-multiple-values` | Multiple medical values |
+| `07-scanned-pdf` | PDF OCR processing |
+| `08-ocr-challenges` | Difficult text extraction |
+| `09-multilingual-report` | Language and translation testing |
+| `10-red-flag-case` | Deterministic safety-rule testing |
+
+All fixtures must be anonymized and must not contain identifiable patient information.
+
+## 9. Testing Types and Tools
+
+| Testing type | Purpose | Proposed tools |
+|---|---|---|
+| Unit testing | Test individual functions and validation rules | Pytest, Vitest |
+| Integration testing | Test communication between frontend and backend | Pytest, MSW |
+| API contract testing | Verify request and response structures | Bruno / Hoppscotch, automated API tests |
+| End-to-end testing | Test complete user journeys | Playwright |
+| Security testing | Verify privacy and input validation | Pytest and manual checks |
+| Medical safety testing | Verify deterministic rules and safe AI output handling | Pytest |
+| Manual testing | Verify usability and error messages | Browser testing |
+
+## 10. Test Execution and Completion Criteria
+
+A feature or task should be considered tested only when:
+
+- Its acceptance criteria have been verified.
+- Relevant unit tests pass.
+- Relevant integration tests pass.
+- API contract tests pass.
+- Medical safety tests pass where applicable.
+- Lint and type checks pass.
+- No known critical privacy or security issue remains.
+- Error handling and safe fallback behavior have been verified.
+
+Tests should be written before implementation wherever practical.
+
+## 11. Implementation Status
+
+| Area | Status |
+|---|---|
+| Proposed API endpoints | Received from Systems & DevOps Lead |
+| Upload formats and 25 MB limit | Proposed |
+| English and Kannada | Proposed |
+| HTTP error statuses | Proposed |
+| Standard error response | Proposed |
+| Deterministic red-flag execution | Required; implementation pending verification |
+| Privacy and deletion policy | Proposed; retention period pending |
+| Authentication | Pending team decision |
+| Feedback endpoint | Conditional MVP |
+| Save/share | Excluded pending approval |
+| Backend integration testing | Pending implementation |
+| Test fixtures | To be prepared |
+| Automated test execution | Pending implementation |
+
+## 12. Pending Team Confirmations
+
+The following decisions must be finalized before implementation and final test execution:
+
+1. Confirm the proposed upload formats and 25 MB limit.
+2. Confirm English and Kannada as the initial supported languages.
+3. Confirm whether feedback is included in the MVP.
+4. Confirm the exact temporary document retention period.
+5. Decide whether authentication is required for the MVP.
+6. Confirm patient data isolation requirements.
+7. Verify all proposed API schemas and error responses against the running backend.
+8. Confirm that save/share remains outside the MVP.
 
 ---
 
-**Document maintained by:** Person 3 — Quality & Engineering Lead
+**Project:** ReportSaathi  
+**Stage:** 6 – Test Plan  
+**Owner:** Person 3 – Quality & Engineering Lead  
+**Document status:** Proposed – Pending Team Confirmation and Backend Integration
