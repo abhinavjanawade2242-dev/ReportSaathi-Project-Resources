@@ -115,7 +115,8 @@ ReportSaathi-Project-Resources/
 │   ├── 06b-safety-rules.md
 │   ├── 06c-api-contracts.md
 │   ├── 07-task-breakdown.md
-│   └── 09-release.md
+│   ├── 09-release.md
+│   └── 10-feedback.md
 │
 ├── tests/
 │
@@ -139,6 +140,7 @@ The repository currently focuses on project requirements, planning and technical
 | [API Contracts](docs/06c-api-contracts.md) | Proposed backend API specifications. |
 | [Task Breakdown](docs/07-task-breakdown.md) | Development and integration tasks. |
 | [Release Plan](docs/09-release.md) | Proposed deployment and release preparation. |
+| [Feedback & Continuous Improvement](docs/10-feedback.md) | Defines feedback collection, application monitoring and continuous improvement processes. |
 
 ## 10. Development Approach
 
