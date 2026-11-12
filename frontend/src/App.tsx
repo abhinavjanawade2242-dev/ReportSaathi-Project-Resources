@@ -16,25 +16,37 @@ export const App: React.FC = () => {
   const [language, setLanguage] = useState<SupportedLanguage>('en');
   const [level, setLevel] = useState<ReadingLevel>('simple');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [report, setReport] = useState<ReportResult>(sampleReportData as unknown as ReportResult);
-  const [extractedValues, setExtractedValues] = useState<BiomarkerValue[]>(
-    (sampleReportData as unknown as ReportResult).values
-  );
+  const [extractedValues, setExtractedValues] = useState<BiomarkerValue[]>([]);
 
   const handleFileUpload = async (file: File) => {
     setIsLoading(true);
-    const { document_id } = await uploadReportFile(file, language, level);
-    const res = await fetchReportResults(document_id);
-    setReport(res);
-    setExtractedValues(res.values);
-    setIsLoading(false);
-    setStep('check_values');
+    setUploadError(null);
+    try {
+      const { document_id } = await uploadReportFile(file, language, level);
+      const res = await fetchReportResults(document_id);
+      setReport(res);
+      setExtractedValues(res.values || []);
+      setStep('check_values');
+    } catch (err: any) {
+      setUploadError(err.message || 'Error processing report file');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleUseSample = () => {
-    setReport(sampleReportData as unknown as ReportResult);
-    setExtractedValues((sampleReportData as unknown as ReportResult).values);
-    setStep('check_values');
+  const handleUseSample = async () => {
+    setIsLoading(true);
+    setUploadError(null);
+    try {
+      const res = await fetchReportResults('sample-demo-report');
+      setReport(res);
+      setExtractedValues(res.values);
+      setStep('check_values');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleConfirmValues = (confirmed: BiomarkerValue[]) => {
@@ -44,6 +56,7 @@ export const App: React.FC = () => {
   };
 
   const handleRestart = () => {
+    setUploadError(null);
     setStep('language');
   };
 
@@ -61,18 +74,33 @@ export const App: React.FC = () => {
       <main style={{ flex: 1 }}>
         {isLoading ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem', animation: 'spin 1s linear infinite' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
               ⏳
             </div>
             <h2 style={{ fontSize: '1.25rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-              Reading your report...
+              Processing Document...
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Extracting clinical biomarkers and checking printed reference ranges.
+              Running Optical Character Recognition and checking printed reference ranges.
             </p>
           </div>
         ) : (
           <>
+            {uploadError && (
+              <div style={{ padding: '1rem', backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', color: '#92400e', marginBottom: '1.25rem', fontSize: '0.95rem' }}>
+                <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Notice:</div>
+                <div>{uploadError}</div>
+                <div style={{ marginTop: '0.75rem' }}>
+                  <button
+                    onClick={handleUseSample}
+                    style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.85rem' }}
+                  >
+                    Load Verified Sample CBC Report Instead →
+                  </button>
+                </div>
+              </div>
+            )}
+
             {step === 'language' && (
               <LanguageSelector
                 selectedLanguage={language}

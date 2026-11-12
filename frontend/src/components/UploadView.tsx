@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { checkBackendHealth } from '../api';
 
 interface Props {
   onFileUpload: (file: File) => void;
@@ -11,6 +12,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 export const UploadView: React.FC<Props> = ({ onFileUpload, onUseSample, onBack }) => {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkBackendHealth().then(setBackendOnline);
+  }, []);
 
   const handleFile = (file: File) => {
     setError(null);
@@ -28,19 +34,36 @@ export const UploadView: React.FC<Props> = ({ onFileUpload, onUseSample, onBack 
 
   return (
     <div className="card">
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>
-        2. Upload Medical Report
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: 'var(--primary)' }}>
+          2. Upload Medical Report
+        </h2>
+        <span
+          style={{
+            fontSize: '0.75rem',
+            padding: '0.2rem 0.5rem',
+            borderRadius: '4px',
+            fontWeight: 600,
+            backgroundColor: backendOnline ? '#dcfce7' : '#fef3c7',
+            color: backendOnline ? '#15803d' : '#b45309',
+            border: backendOnline ? '1px solid #bbf7d0' : '1px solid #fde68a',
+          }}
+        >
+          {backendOnline === null ? 'Checking API...' : backendOnline ? '● Backend API Online' : '○ Backend Offline (Demo Mode)'}
+        </span>
+      </div>
+
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-        Take a clear photo or upload a PDF document (max 10 MB).
+        Upload a clear lab report photo or PDF (max 10 MB).
       </p>
 
       {error && (
-        <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#b91c1c', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        <div style={{ padding: '0.85rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#b91c1c', marginBottom: '1rem', fontSize: '0.9rem', lineHeight: 1.4 }}>
           {error}
         </div>
       )}
 
+      {/* Drag & Drop Area */}
       <div
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
@@ -85,20 +108,18 @@ export const UploadView: React.FC<Props> = ({ onFileUpload, onUseSample, onBack 
         />
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+      {/* Distinct Sample Report Button */}
+      <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '1.5rem', textAlign: 'center' }}>
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+          Want to test the full explanation & doctor questions without a real report?
+        </div>
         <button
           type="button"
           onClick={onUseSample}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--accent)',
-            fontWeight: 600,
-            textDecoration: 'underline',
-            fontSize: '0.95rem',
-          }}
+          className="btn-secondary"
+          style={{ width: '100%', borderColor: 'var(--accent)', color: 'var(--accent)', fontWeight: 600 }}
         >
-          Or click here to test with a verified sample CBC report →
+          🧪 Test with Verified Sample CBC Report →
         </button>
       </div>
 
